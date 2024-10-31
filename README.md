@@ -1,6 +1,7 @@
 Getting started with local development:
     
     Before running the application:
+        Start docker desktop.
         Execute run-mysql-container.sh to start a container in docker that will serve as a dev mysql database.
 
     Run the application:
@@ -15,3 +16,4 @@ Helpful tools for local development:
 
 
 Deployment instructions:
+    TBD
