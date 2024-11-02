@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,8 +16,12 @@ import com.michael_gregory.blog_api.dao.BlogEntryRepository;
 import com.michael_gregory.blog_api.dto.BlogTitleDTO;
 import com.michael_gregory.blog_api.entity.BlogEntry;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 
@@ -58,4 +64,9 @@ public class BlogEntryController {
         .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/blog-entries")
+    public ResponseEntity<BlogEntry> createBlogEntry(@Valid @RequestBody BlogEntry blogEntry) {
+        BlogEntry savedEntry = blogEntryRepository.save(blogEntry);
+        return new ResponseEntity<>(savedEntry, HttpStatus.CREATED);
+    }
 }

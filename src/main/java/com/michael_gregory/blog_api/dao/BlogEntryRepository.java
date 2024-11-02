@@ -19,6 +19,4 @@ public interface BlogEntryRepository extends JpaRepository<BlogEntry, Long> {
     @Query("SELECT new com.michael_gregory.blog_api.dto.BlogTitleDTO(b.id, b.title) FROM BlogEntry b")
     Page<BlogTitleDTO> findAllTitles(Pageable pageable);
 
-    //@Query("SELECT new com.michael_gregory.blog_api.entity.BlogEntry FROM BlogEntry b WHERE b.c")
-    //BlogEntry findNewestBlogEntry(Long id);
 }
