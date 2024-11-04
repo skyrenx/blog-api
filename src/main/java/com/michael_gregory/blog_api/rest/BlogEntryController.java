@@ -8,12 +8,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.michael_gregory.blog_api.dao.BlogEntryRepository;
 import com.michael_gregory.blog_api.dto.BlogTitleDTO;
+import com.michael_gregory.blog_api.dto.BlogTitlesResponse;
 import com.michael_gregory.blog_api.entity.BlogEntry;
 
 import jakarta.validation.Valid;
@@ -33,13 +33,15 @@ public class BlogEntryController {
     private BlogEntryRepository blogEntryRepository;
 
 
-    // Ex: GET http://localhost:8080/api/findAllTitles?page=0&size=10&sort=title,asc
+    // Ex: GET http://localhost:8080/api/findAllTitles?page=0&size20&sort=title,asc
     @GetMapping("/find-all-titles")
-    public ResponseEntity<List<BlogTitleDTO>> findAllTitles(Pageable pageable) {
-        List<BlogTitleDTO> blogTitles = blogEntryRepository.findAllTitles(pageable)
-        .getContent();
+    public ResponseEntity<BlogTitlesResponse> findAllTitles(Pageable pageable) {
+        Page<BlogTitleDTO> page = blogEntryRepository.findAllTitles(pageable);
+        int pageCount = page.getTotalPages();
+        List<BlogTitleDTO> blogTitles = page.getContent();
+        BlogTitlesResponse response = new BlogTitlesResponse(blogTitles, pageCount);
         if(!blogTitles.isEmpty()){
-            return ResponseEntity.ok(blogTitles);
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.notFound().build();
         }
