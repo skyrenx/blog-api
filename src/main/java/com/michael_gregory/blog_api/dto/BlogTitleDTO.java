@@ -6,37 +6,27 @@ public class BlogTitleDTO {
     private Long id;
     private String title;
     private String author;
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
+    public BlogTitleDTO(Long id, String title, String author, LocalDateTime createdAt, LocalDateTime updatedAt){
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     public String getAuthor() {
         return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public BlogTitleDTO(Long id, String title){
-        this.id = id;
-        this.title = title;
     }
 
     public Long getId() {

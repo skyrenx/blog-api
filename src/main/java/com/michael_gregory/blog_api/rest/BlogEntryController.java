@@ -34,7 +34,7 @@ public class BlogEntryController {
 
 
     // Ex: GET http://localhost:8080/api/findAllTitles?page=0&size20&sort=title,asc
-    @GetMapping("/find-all-titles")
+    @GetMapping("/public/find-all-titles")
     public ResponseEntity<BlogTitlesResponse> findAllTitles(Pageable pageable) {
         Page<BlogTitleDTO> page = blogEntryRepository.findAllTitles(pageable);
         int pageCount = page.getTotalPages();
@@ -47,7 +47,7 @@ public class BlogEntryController {
         }
     }
     
-    @GetMapping("/blog-entries/{id}")
+    @GetMapping("/public/blog-entries/{id}")
     public ResponseEntity<BlogEntry> findBlogEntryById( @PathVariable Long id) {
         Optional<BlogEntry> blogEntry = blogEntryRepository.findById(id);
         return blogEntry.map(ResponseEntity::ok)
@@ -56,7 +56,7 @@ public class BlogEntryController {
 
     // Find the newest blog entry.
     // Uses Spring Data REST pagination to fetch only the required record.
-    @GetMapping("/latest-blog-entry")
+    @GetMapping("/public/latest-blog-entry")
     public ResponseEntity<BlogEntry> findNewestBlogEntry() {
         return blogEntryRepository.findAll(PageRequest.of(0, 1, 
         Sort.by(Sort.Direction.DESC, "createdAt")))
@@ -71,4 +71,14 @@ public class BlogEntryController {
         BlogEntry savedEntry = blogEntryRepository.save(blogEntry);
         return new ResponseEntity<>(savedEntry, HttpStatus.CREATED);
     }
+
+    //test endpoint. returns the newest blog entry for admin
+    @GetMapping("/blog-entries")
+    public ResponseEntity<BlogEntry> getBlogEntry() {
+        return blogEntryRepository.findAll(PageRequest.of(0, 1, 
+        Sort.by(Sort.Direction.DESC, "createdAt")))
+        .getContent()
+        .stream()
+        .findFirst().map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());    }
 }

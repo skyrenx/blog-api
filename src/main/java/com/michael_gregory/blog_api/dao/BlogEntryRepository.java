@@ -16,7 +16,7 @@ public interface BlogEntryRepository extends JpaRepository<BlogEntry, Long> {
 
     // This is an example of JPQL in which queries are written with 
     // java entities and DTOs instead of database tables and columns)
-    @Query("SELECT new com.michael_gregory.blog_api.dto.BlogTitleDTO(b.id, b.title) FROM BlogEntry b")
+    @Query("SELECT new com.michael_gregory.blog_api.dto.BlogTitleDTO(b.id, b.title, b.author, b.createdAt, b.updatedAt) FROM BlogEntry b")
     Page<BlogTitleDTO> findAllTitles(Pageable pageable);
 
 }
