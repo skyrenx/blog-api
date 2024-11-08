@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.michael_gregory.blog_api.dao.BlogEntryRepository;
-import com.michael_gregory.blog_api.dto.BlogTitleDTO;
+import com.michael_gregory.blog_api.dto.BlogTitle;
 import com.michael_gregory.blog_api.dto.BlogTitlesResponse;
 import com.michael_gregory.blog_api.entity.BlogEntry;
 
@@ -36,9 +36,9 @@ public class BlogEntryController {
     // Ex: GET http://localhost:8080/api/findAllTitles?page=0&size20&sort=title,asc
     @GetMapping("/public/find-all-titles")
     public ResponseEntity<BlogTitlesResponse> findAllTitles(Pageable pageable) {
-        Page<BlogTitleDTO> page = blogEntryRepository.findAllTitles(pageable);
+        Page<BlogTitle> page = blogEntryRepository.findAllTitles(pageable);
         int pageCount = page.getTotalPages();
-        List<BlogTitleDTO> blogTitles = page.getContent();
+        List<BlogTitle> blogTitles = page.getContent();
         BlogTitlesResponse response = new BlogTitlesResponse(blogTitles, pageCount);
         if(!blogTitles.isEmpty()){
             return ResponseEntity.ok(response);

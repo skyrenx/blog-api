@@ -3,15 +3,15 @@ package com.michael_gregory.blog_api.dto;
 import java.util.List;
 
 public class BlogTitlesResponse {
-    public List<BlogTitleDTO> blogTitles;
+    public List<BlogTitle> blogTitles;
     public int pageCount;
 
-    public BlogTitlesResponse(List<BlogTitleDTO> blogTitleDTOs, int pageCount){
+    public BlogTitlesResponse(List<BlogTitle> blogTitleDTOs, int pageCount){
         this.blogTitles = blogTitleDTOs;
         this.pageCount = pageCount;
     }
 
-    public List<BlogTitleDTO> getBlogTitles() {
+    public List<BlogTitle> getBlogTitles() {
         return blogTitles;
     }
 

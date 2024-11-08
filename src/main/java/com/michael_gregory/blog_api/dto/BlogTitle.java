@@ -2,14 +2,14 @@ package com.michael_gregory.blog_api.dto;
 
 import java.time.LocalDateTime;
 
-public class BlogTitleDTO {
+public class BlogTitle {
     private Long id;
     private String title;
     private String author;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public BlogTitleDTO(Long id, String title, String author, LocalDateTime createdAt, LocalDateTime updatedAt){
+    public BlogTitle(Long id, String title, String author, LocalDateTime createdAt, LocalDateTime updatedAt){
         this.id = id;
         this.title = title;
         this.author = author;

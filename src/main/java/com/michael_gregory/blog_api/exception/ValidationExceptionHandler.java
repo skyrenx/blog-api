@@ -31,7 +31,16 @@ public class ValidationExceptionHandler {
 
         response.put("validationError", errorMessages);
 
-        // Return a JSON response with error messages
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleEntityNotFoundExceptions(RuntimeException ex) {
+
+
+        Map<String, String> response = new HashMap<>();
+         response.put("entityNotFoundError", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }
