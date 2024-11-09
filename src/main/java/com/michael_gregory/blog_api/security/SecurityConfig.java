@@ -4,8 +4,8 @@ import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,8 +16,20 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    /*
+     * UserController(userServiceImpl);
+     * SecurityConfig(authManager);
+     * AuthManager(userServiceImpl);
+     * 
+     * 
+     */
 
+    private CustomAuthenticationManager authenticationManager;
 
+    //TODO @Lazy is required to resolve circular dependency issue. I still don't completely understand the issue and should look into it further.
+    public SecurityConfig(@Lazy CustomAuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
     @Bean
     UserDetailsManager UserDetailsManager(DataSource dataSource){
         return new JdbcUserDetailsManager(dataSource);
@@ -28,15 +40,21 @@ public class SecurityConfig {
     }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        AuthenticationFilter authFilter = new AuthenticationFilter(authenticationManager);
+        authFilter.setFilterProcessesUrl("/authenticate");
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
                         .requestMatchers("/api/admin/*").hasRole("ADMIN")
-                        .anyRequest().authenticated().and().addFilter(new AuthenticationFilter()));
+                        .anyRequest().authenticated()
+                        .and()
+                        .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
+                        .addFilter(authFilter))
+                        //.addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class)
+                        ;
 
-        // use HTTP Basic authentication
-        http.httpBasic(Customizer.withDefaults());
+
 
         // TODO disable Cross Site Request Forgery (CSRF)
         // in general, not required for stateless REST APIs that use POST, PUT, DELETE
