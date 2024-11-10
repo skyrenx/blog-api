@@ -16,7 +16,7 @@ import com.michael_gregory.blog_api.service.UserService;
 
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api")
 public class UserController {
 
     UserService userService;
@@ -25,20 +25,27 @@ public class UserController {
 		this.userService = userService;
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<User> findById(@PathVariable Long id) {
-		return new ResponseEntity<>(HttpStatus.OK);
+	@GetMapping("/admin/user/{id}")
+	public ResponseEntity<String> findByIdAdmin(@PathVariable String id) {
+		String username = userService.getUser(id).getUsername();
+		return new ResponseEntity<>("admin: " + username, HttpStatus.OK);
 	}
+	@GetMapping("/user/{id}")
+	public ResponseEntity<String> findById(@PathVariable String id) {
+		String username = userService.getUser(id).getUsername();
+		return new ResponseEntity<>("user: " + username, HttpStatus.OK);
+	}	
 
-    @PostMapping("/register")
+    @PostMapping("/public/user/register")
 	public ResponseEntity<String> createUser(@Valid @RequestBody User user) {
 		userService.saveUser(user);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 	
 
-	@PostMapping("/login")
+	//TODO this should be an authentication endpoint, like /authenticate
+	@PostMapping("/user/login")
 	public ResponseEntity<String> login(@Valid @RequestBody User user) {
-		return new ResponseEntity<>(HttpStatus.ACCEPTED);
+		return new ResponseEntity<>("Login success!", HttpStatus.ACCEPTED);
 	}
 }

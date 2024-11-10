@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.michael_gregory.blog_api.service.AuthorityService;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -26,7 +28,8 @@ public class SecurityConfig {
 
     private CustomAuthenticationManager authenticationManager;
 
-    //TODO @Lazy is required to resolve circular dependency issue. I still don't completely understand the issue and should look into it further.
+    //TODO @Lazy is required to resolve circular dependency issue. I still don't 
+    // completely understand the issue and should look into it further.
     public SecurityConfig(@Lazy CustomAuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
@@ -38,23 +41,26 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        AuthenticationFilter authFilter = new AuthenticationFilter(authenticationManager);
-        authFilter.setFilterProcessesUrl("/authenticate");
+        AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager);
+        authenticationFilter.setFilterProcessesUrl("/api/user/login");
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
+                        //.requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
+                        //.requestMatchers("/api/admin/*").hasRole("ADMIN")
                         .requestMatchers("/api/admin/*").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                        .and()
-                        .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
-                        .addFilter(authFilter))
-                        //.addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class)
-                        ;
+                        .anyRequest().authenticated())
+                .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
+                .addFilter(authenticationFilter)
+                .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class);
 
 
+        //TODO
+        //Test scenarios like invalid tokens, expired tokens, and unauthorized access attempts 
+        //to ensure that the filters handle these gracefully.
 
         // TODO disable Cross Site Request Forgery (CSRF)
         // in general, not required for stateless REST APIs that use POST, PUT, DELETE
@@ -63,5 +69,6 @@ public class SecurityConfig {
 
         return http.build(); // Build the security filter chain
     }
+
 
 }

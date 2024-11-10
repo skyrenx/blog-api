@@ -1,8 +1,12 @@
 package com.michael_gregory.blog_api.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
@@ -22,15 +26,20 @@ public class User {
     @Column(name = "enabled", nullable = false)
     private int enabled = 1;
 
+    // One-to-many relationship with authorities
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Authority> authorities;
+
     // Default constructor
     public User() {
     }
 
     // Parameterized constructor
-    public User(String username, String password, int enabled) {
+    public User(String username, String password, int enabled, List<Authority> authorities) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
+        this.authorities = authorities;
     }
 
     // Getters and Setters
@@ -57,4 +66,14 @@ public class User {
     public void setEnabled(int enabled) {
         this.enabled = enabled;
     }
+
+    public List<Authority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(List<Authority> authorities) {
+        this.authorities = authorities;
+    }
+
+    
 }
