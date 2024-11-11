@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,8 @@ public class UserController {
 		this.userService = userService;
 	}
 
+	//TODO I tried this annotation @PreAuthorize("hasRole('ADMIN')")
+	// but users without the correct role were still able to access the endpoint
 	@GetMapping("/admin/user/{id}")
 	public ResponseEntity<String> findByIdAdmin(@PathVariable String id) {
 		String username = userService.getUser(id).getUsername();

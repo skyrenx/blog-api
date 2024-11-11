@@ -3,6 +3,7 @@ package com.michael_gregory.blog_api.security;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.FilterChain;
@@ -19,6 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+
+import io.micrometer.common.util.StringUtils;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
@@ -38,10 +41,13 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         .verify(token);
         String user =  decodedJWT.getSubject();
 
-        String roles = decodedJWT.getClaim("roles").asString();
-        Collection<SimpleGrantedAuthority> authorities = Arrays.stream(roles.split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
+        Collection<SimpleGrantedAuthority> authorities = Arrays.asList();
+        if(roles != null && !roles.isEmpty()){
+            authorities = roles.stream()
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
+        }
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);

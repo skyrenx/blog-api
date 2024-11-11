@@ -40,7 +40,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") //TODO check why getting 400 bad request when user doesn't have the correct role...
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") //TODO check why getting 400 bad request when user doesn't have the required role, should be a 403 forbidden...
                         .anyRequest().authenticated())
                 .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
                 .addFilter(authenticationFilter)
@@ -49,7 +49,7 @@ public class SecurityConfig {
 
         //TODO
         //Test scenarios like invalid tokens, expired tokens, and unauthorized access attempts 
-        //to ensure that the filters handle these gracefully.
+        //to ensure that the filters handle these scenarios well.
 
         // TODO disable Cross Site Request Forgery (CSRF)
         // in general, not required for stateless REST APIs that use POST, PUT, DELETE

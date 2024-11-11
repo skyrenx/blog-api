@@ -2,6 +2,7 @@ package com.michael_gregory.blog_api.security;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 
@@ -68,10 +69,9 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
             Authentication authResult) throws IOException, ServletException {
-                        // Extract authorities (roles) and convert them to a comma-separated string
-        String roles = authResult.getAuthorities().stream()
+        List<String> roles = authResult.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.joining(","));
+        .collect(Collectors.toList());
         String token = JWT.create()
                 .withSubject(authResult.getName())
                 .withClaim("roles", roles) 
