@@ -2,6 +2,8 @@ package com.michael_gregory.blog_api.security;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,11 +12,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
@@ -29,13 +33,18 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         }
 
         String token = header.replace(SecurityConstants.BEARER, "");
-        String user = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET_KEY))
-            .build()
-            .verify(token)
-            .getSubject();
+        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET_KEY))
+        .build()
+        .verify(token);
+        String user =  decodedJWT.getSubject();
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, Arrays.asList());
+        String roles = decodedJWT.getClaim("roles").asString();
+        Collection<SimpleGrantedAuthority> authorities = Arrays.stream(roles.split(","))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response); 
     }
 }

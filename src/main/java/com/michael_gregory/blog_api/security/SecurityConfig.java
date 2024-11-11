@@ -5,7 +5,6 @@ import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,17 +13,9 @@ import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.michael_gregory.blog_api.service.AuthorityService;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    /*
-     * UserController(userServiceImpl);
-     * SecurityConfig(authManager);
-     * AuthManager(userServiceImpl);
-     * 
-     * 
-     */
 
     private CustomAuthenticationManager authenticationManager;
 
@@ -48,10 +39,8 @@ public class SecurityConfig {
         authenticationFilter.setFilterProcessesUrl("/api/user/login");
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/public/*").permitAll()
-                        //.requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
-                        //.requestMatchers("/api/admin/*").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/*").hasRole("ADMIN")
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") //TODO check why getting 400 bad request when user doesn't have the correct role...
                         .anyRequest().authenticated())
                 .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
                 .addFilter(authenticationFilter)

@@ -42,8 +42,6 @@ public class UserController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 	
-
-	//TODO this should be an authentication endpoint, like /authenticate
 	@PostMapping("/user/login")
 	public ResponseEntity<String> login(@Valid @RequestBody User user) {
 		return new ResponseEntity<>("Login success!", HttpStatus.ACCEPTED);
