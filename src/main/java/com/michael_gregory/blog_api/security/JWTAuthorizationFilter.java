@@ -21,14 +21,20 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
-import io.micrometer.common.util.StringUtils;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        
+        if (request.getRequestURI().equals(SecurityConstants.LOGIN_PATH))
+        {
+            filterChain.doFilter(request, response); // Skip JWT validation for login
+            return;
+        }
         String header = request.getHeader("Authorization");
 
+        
         //skip this filter if there is no jwt (Request is not attempting authorization)
         if (header == null || !header.startsWith(SecurityConstants.BEARER)) {
             filterChain.doFilter(request, response);

@@ -1,5 +1,7 @@
 package com.michael_gregory.blog_api.security;
 
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
@@ -12,7 +14,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import org.springframework.web.cors.CorsConfigurationSource;
+
+        //TODO
+        //Test scenarios like invalid tokens, expired tokens, and unauthorized access attempts 
+        //to ensure that the filters handle these scenarios well.
+        //TODO input validation on user credentials during login...
+        //TODO store jwt in httponly cookie instead of local storage...
+        //TODO what is the JSESSIONID cookie that is getting sent on authentication
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -24,10 +38,12 @@ public class SecurityConfig {
     public SecurityConfig(@Lazy CustomAuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
-    @Bean
+
+    @Bean //TODO why
     UserDetailsManager UserDetailsManager(DataSource dataSource){
         return new JdbcUserDetailsManager(dataSource);
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -36,28 +52,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager);
-        authenticationFilter.setFilterProcessesUrl("/api/user/login");
+        authenticationFilter.setFilterProcessesUrl(SecurityConstants.LOGIN_PATH);
         http
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") //TODO check why getting 400 bad request when user doesn't have the required role, should be a 403 forbidden...
-                        .anyRequest().authenticated())
-                .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
-                .addFilter(authenticationFilter)
-                .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class);
-
-
-        //TODO
-        //Test scenarios like invalid tokens, expired tokens, and unauthorized access attempts 
-        //to ensure that the filters handle these scenarios well.
-
-        // TODO disable Cross Site Request Forgery (CSRF)
-        // in general, not required for stateless REST APIs that use POST, PUT, DELETE
-        // and/or PATCH
-        http.csrf(csrf -> csrf.disable());
-
-        return http.build(); // Build the security filter chain
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            //https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // Store CSRF token in a readable cookie
+                .ignoringRequestMatchers("/api/public/**")
+                
+            )
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
+            .addFilter(authenticationFilter)
+            .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class); 
+        return http.build();
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:3000"); // Your frontend origin
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
+        config.setAllowCredentials(true); // needed for authorization header
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config); // Apply this CORS configuration to all routes
+
+        return source;
+    }
 
 }
+

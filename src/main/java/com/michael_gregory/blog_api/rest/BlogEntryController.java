@@ -45,14 +45,9 @@ public class BlogEntryController {
         return blogEntryService.findNewestBlogEntry();
     }
 
-    @PostMapping("/blog-entries")
+    @PostMapping("/admin/blog-entries")
     public ResponseEntity<BlogEntry> createBlogEntry(@Valid @RequestBody BlogEntry blogEntry) {
         return blogEntryService.createBlogEntry(blogEntry);
     }
 
-    //test endpoint. returns the newest blog entry for admin
-    @GetMapping("/blog-entries")
-    public ResponseEntity<BlogEntry> getBlogEntry() {
-        return blogEntryService.getBlogEntry();
-    }
 }

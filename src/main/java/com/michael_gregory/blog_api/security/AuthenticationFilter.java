@@ -62,12 +62,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException failed) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write(failed.getMessage());
+        response.addHeader("Content-Type", "application/json");
+        response.getWriter().write("\""+failed.getMessage()+"\"");
         response.getWriter().flush();
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain,
             Authentication authResult) throws IOException, ServletException {
         List<String> roles = authResult.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
@@ -77,9 +78,15 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .withClaim("roles", roles) 
                 .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRATION))
                 .sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+
         response.addHeader(SecurityConstants.AUTHORIZATION, SecurityConstants.BEARER + token);
-        response.getWriter().write("Authentication success");
+        response.addHeader("Content-Type", "application/json");
+        response.setContentType("application/json");
+        //TODO : The response body does not get included in the response.
+        //Do not do filterChain.doFilter here. I tried it and it caused more issues.
+        response.getWriter().write("\""+authResult.getName()+"\""); 
         response.getWriter().flush();
+        
     }
 
 }
