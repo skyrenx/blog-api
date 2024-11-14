@@ -4,11 +4,14 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
@@ -21,26 +24,26 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import org.springframework.web.cors.CorsConfigurationSource;
 
-        //TODO
-        //Test scenarios like invalid tokens, expired tokens, and unauthorized access attempts 
-        //to ensure that the filters handle these scenarios well.
-        //TODO input validation on user credentials during login...
-        //TODO store jwt in httponly cookie instead of local storage...
-        //TODO what is the JSESSIONID cookie that is getting sent on authentication
+//TODO
+//Test scenarios like invalid tokens, expired tokens, and unauthorized access attempts 
+//to ensure that the filters handle these scenarios well.
+//TODO input validation on user credentials during login...
+//TODO store jwt in httponly cookie instead of local storage...
+//TODO what is the JSESSIONID cookie that is getting sent on authentication
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private CustomAuthenticationManager authenticationManager;
 
-    //TODO @Lazy is required to resolve circular dependency issue. I still don't 
+    // TODO @Lazy is required to resolve circular dependency issue. I still don't
     // completely understand the issue and should look into it further.
     public SecurityConfig(@Lazy CustomAuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
 
-    @Bean //TODO why
-    UserDetailsManager UserDetailsManager(DataSource dataSource){
+    @Bean // TODO why
+    UserDetailsManager UserDetailsManager(DataSource dataSource) {
         return new JdbcUserDetailsManager(dataSource);
     }
 
@@ -53,30 +56,58 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager);
         authenticationFilter.setFilterProcessesUrl(SecurityConstants.LOGIN_PATH);
-        http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            //https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // Store CSRF token in a readable cookie
-                .ignoringRequestMatchers("/api/public/**")
-                
-            )
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/error").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
-            .addFilter(authenticationFilter)
-            .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class); 
+
+        http // Force HTTPS by redirecting all HTTP requests to HTTPS
+                .requiresChannel(channel -> channel
+                        .anyRequest().requiresSecure())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // .cors(cors -> cors
+                //         .configurationSource(request -> {
+                //             CorsConfiguration config = new CorsConfiguration();
+                //             config.setAllowCredentials(true);
+                //             config.addAllowedOriginPattern("*"); // Allow any origin
+                //             config.addAllowedMethod("*"); // Allow all HTTP methods
+                //             config.addAllowedHeader("*"); // Allow all headers
+                //             return config;
+                //         }))
+                // TODO use this cors setting for prod, not the above one...
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                // https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa
+                // .csrf(csrf -> csrf
+                //         .csrfTokenRepository(customCsrfTokenRepository()) // Store CSRF token in a
+                //                                                           // readable cookie
+                //         .ignoringRequestMatchers("/api/public/**"))
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
+                .addFilter(authenticationFilter)
+                .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class);
         return http.build();
+    }
+
+    private CookieCsrfTokenRepository customCsrfTokenRepository() {
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookiePath("/");
+        csrfTokenRepository.setCookieName("XSRF-TOKEN");
+        csrfTokenRepository.setCookieCustomizer((c) -> {
+            c.secure(true).sameSite("None");
+        }); // TODO don't use sameSite none in production...
+        // Workaround to set SameSite=None attribute, as it's not directly configurable
+        // on the repository
+        csrfTokenRepository.setHeaderName("X-XSRF-TOKEN");
+
+        return csrfTokenRepository;
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:3000"); // Your frontend origin
+        config.addAllowedOrigin("https://localhost:3000"); // Your frontend origin
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
@@ -89,4 +120,3 @@ public class SecurityConfig {
     }
 
 }
-

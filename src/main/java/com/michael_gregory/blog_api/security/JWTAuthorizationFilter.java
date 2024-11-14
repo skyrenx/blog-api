@@ -33,7 +33,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
         String header = request.getHeader("Authorization");
-
         
         //skip this filter if there is no jwt (Request is not attempting authorization)
         if (header == null || !header.startsWith(SecurityConstants.BEARER)) {

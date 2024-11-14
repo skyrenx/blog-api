@@ -2,7 +2,9 @@ package com.michael_gregory.blog_api.security;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 
@@ -80,12 +82,44 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
 
         response.addHeader(SecurityConstants.AUTHORIZATION, SecurityConstants.BEARER + token);
-        response.addHeader("Content-Type", "application/json");
         response.setContentType("application/json");
-        //TODO : The response body does not get included in the response.
         //Do not do filterChain.doFilter here. I tried it and it caused more issues.
-        response.getWriter().write("\""+authResult.getName()+"\""); 
+        ObjectMapper mapper = new ObjectMapper();
+        
+        AuthenticationSuccessResponseBody responseBody = new AuthenticationSuccessResponseBody(authResult.getName(), roles);
+     
+        // Convert to JSON string
+        String jsonResponseBody = mapper.writeValueAsString(responseBody);
+        response.getWriter().write(jsonResponseBody); 
         response.getWriter().flush();
+        
+    }
+
+    class AuthenticationSuccessResponseBody {
+        private String user;
+        private List<String> roles;
+
+        public AuthenticationSuccessResponseBody(String user, List<String> roles){
+            this.user = user;
+            this.roles = roles;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public void setUser(String user) {
+            this.user = user;
+        }
+
+        public List<String> getRoles() {
+            return roles;
+        }
+
+        public void setRoles(List<String> roles) {
+            this.roles = roles;
+        }
+
         
     }
 
