@@ -15,9 +15,20 @@ Getting started with local development:
         Execute stop-mysql-container.sh to terminate the docker container running the dev mysql database.
 
 Helpful tools for local development:
+    Run with environment variables set...
+    mvn spring-boot:run -Dspring-boot.run.arguments="--CORS_ALLOWED_ORIGINS=https://localhost:3000,https://michaelgregory.dev --spring.profiles.active=dev"
 
     MySQL workbench
 
 
 Deployment instructions:
-    TBD
+    Package the application:
+        Run the command "mvn package -Dspring.profiles.active=dev" to generate .jar file in /target directory
+    Build docker image:
+        Use your dockerfile to build a docker image with the command: docker build -t michael-gregory/blog-api .
+    Upload the Image to Amazon Elastic Container Registry (ECR):
+        Go to the ECR Console in AWS.
+        Create a new repository and note the repository URI (e.g., 123456789012.dkr.ecr.us-west-2.amazonaws.com/yourapp).
+    //deploy that image with production enviornment variables as an amazon lightsail container
+
+    more TBD...

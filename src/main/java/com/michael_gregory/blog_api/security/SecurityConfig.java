@@ -1,9 +1,11 @@
 package com.michael_gregory.blog_api.security;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +35,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Value("${cors.allowedOrigins}")
+    private String[] allowedOrigins;
 
     private CustomAuthenticationManager authenticationManager;
 
@@ -57,30 +61,18 @@ public class SecurityConfig {
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager);
         authenticationFilter.setFilterProcessesUrl(SecurityConstants.LOGIN_PATH);
 
-        http // Force HTTPS by redirecting all HTTP requests to HTTPS
+        http 
                 .requiresChannel(channel -> channel
-                        .anyRequest().requiresSecure())
+                        .requestMatchers(r -> r.getRequestURI().equals("/actuator/health")).requiresInsecure()
+                        .anyRequest().requiresSecure() // Require HTTPS for all other requests
+                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // .cors(cors -> cors
-                //         .configurationSource(request -> {
-                //             CorsConfiguration config = new CorsConfiguration();
-                //             config.setAllowCredentials(true);
-                //             config.addAllowedOriginPattern("*"); // Allow any origin
-                //             config.addAllowedMethod("*"); // Allow all HTTP methods
-                //             config.addAllowedHeader("*"); // Allow all headers
-                //             return config;
-                //         }))
-                // TODO use this cors setting for prod, not the above one...
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                // https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa
-                // .csrf(csrf -> csrf
-                //         .csrfTokenRepository(customCsrfTokenRepository()) // Store CSRF token in a
-                //                                                           // readable cookie
-                //         .ignoringRequestMatchers("/api/public/**"))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
@@ -89,8 +81,29 @@ public class SecurityConfig {
                 .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class);
         return http.build();
     }
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
 
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
+        config.setAllowCredentials(true); // needed for authorization header
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config); // Apply this CORS configuration to all routes
+        return source;
+    }
+
+    // Use this config if you want to enable CSRF later
+    // // https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa
+    // .csrf(csrf -> csrf
+    // .csrfTokenRepository(customCsrfTokenRepository())
+    // .ignoringRequestMatchers("/api/public/**"))
     private CookieCsrfTokenRepository customCsrfTokenRepository() {
+        //Store csrf token in a readable cookie
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookiePath("/");
         csrfTokenRepository.setCookieName("XSRF-TOKEN");
@@ -104,14 +117,15 @@ public class SecurityConfig {
         return csrfTokenRepository;
     }
 
+    //CORS config for use in dev
+    //.cors(cors -> cors.configurationSource(devCorsConfigurationSource()))
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource devCorsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("https://localhost:3000"); // Your frontend origin
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
-        config.setExposedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
-        config.setAllowCredentials(true); // needed for authorization header
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*"); // Allow any origin
+        config.addAllowedMethod("*"); // Allow all HTTP methods
+        config.addAllowedHeader("*"); // Allow all headers
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config); // Apply this CORS configuration to all routes
