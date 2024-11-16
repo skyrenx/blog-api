@@ -6,11 +6,8 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.server.Cookie.SameSite;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -38,19 +35,19 @@ public class SecurityConfig {
     @Value("${cors.allowedOrigins}")
     private String[] allowedOrigins;
 
-    private CustomAuthenticationManager authenticationManager;
+    private AuthenticationFilter authenticationFilter;
+    private JWTAuthorizationFilter jwtAuthorizationFilter;
 
-    // TODO @Lazy is required to resolve circular dependency issue. I still don't
-    // completely understand the issue and should look into it further.
-    public SecurityConfig(@Lazy CustomAuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    public SecurityConfig(AuthenticationFilter authenticationFilter, JWTAuthorizationFilter jwtAuthorizationFilter) {
+        this.authenticationFilter = authenticationFilter;
+        this.jwtAuthorizationFilter = jwtAuthorizationFilter;
     }
 
     @Bean // TODO why
     UserDetailsManager UserDetailsManager(DataSource dataSource) {
         return new JdbcUserDetailsManager(dataSource);
     }
-
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -58,7 +55,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager);
         authenticationFilter.setFilterProcessesUrl(SecurityConstants.LOGIN_PATH);
 
         http 
@@ -78,7 +74,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
                 .addFilter(authenticationFilter)
-                .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class);
+                .addFilterAfter(jwtAuthorizationFilter, AuthenticationFilter.class);
         return http.build();
     }
     

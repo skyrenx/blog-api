@@ -3,6 +3,7 @@ package com.michael_gregory.blog_api.security;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,7 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.michael_gregory.blog_api.entity.Authority;
@@ -23,9 +24,9 @@ public class CustomAuthenticationManager implements AuthenticationManager {
 
     private UserService userServiceImpl;
     private AuthorityService authorityService;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private PasswordEncoder bCryptPasswordEncoder;
 
-    public CustomAuthenticationManager(UserService userServiceImpl, AuthorityService authorityService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public CustomAuthenticationManager(@Lazy UserService userServiceImpl, AuthorityService authorityService, @Lazy PasswordEncoder bCryptPasswordEncoder) {
         this.userServiceImpl = userServiceImpl;
         this.authorityService = authorityService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;

@@ -15,14 +15,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
-
+@Component
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
+    private final SecurityConstants securityConstants;
+
+    public JWTAuthorizationFilter(SecurityConstants securityConstants) {
+        this.securityConstants = securityConstants;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -41,7 +47,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         }
 
         String token = header.replace(SecurityConstants.BEARER, "");
-        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET_KEY))
+        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(securityConstants.getSecretKey()))
         .build()
         .verify(token);
         String user =  decodedJWT.getSubject();

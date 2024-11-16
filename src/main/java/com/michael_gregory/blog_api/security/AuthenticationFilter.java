@@ -8,11 +8,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -24,12 +26,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.michael_gregory.blog_api.entity.User;
 
+@Component
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private CustomAuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
+    private final SecurityConstants securityConstants;
 
-    public AuthenticationFilter(CustomAuthenticationManager authenticationManager) {
+    public AuthenticationFilter(AuthenticationManager authenticationManager, SecurityConstants securityConstants) {
+        super(authenticationManager);
         this.authenticationManager = authenticationManager;
+        this.securityConstants = securityConstants;
     }
 
     @Override
@@ -79,7 +85,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .withSubject(authResult.getName())
                 .withClaim("roles", roles) 
                 .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRATION))
-                .sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+                .sign(Algorithm.HMAC512(securityConstants.getSecretKey()));
 
         response.addHeader(SecurityConstants.AUTHORIZATION, SecurityConstants.BEARER + token);
         response.setContentType("application/json");
