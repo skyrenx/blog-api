@@ -82,10 +82,13 @@ I used chat GPT as a coding assistant. I found the AI responses helpful for gene
   - **Changelog and version control.** This hasn't been set up yet as the first functional production ready version of the API has only just been completed.
   - **Enhance validation and error handling for user input.** Username input into username/password needs more validation.
   - **Optimize database interactions for scalability.** (database indexing)
-  - **Research security enhancements.** Determine if CSRF protection would improve API security in my case. I don't think it's needed since the API is https only with JWT authentication.
+  - **Research security enhancements.** Consider further if CSRF protections would increase security. Right now I don't think so.
   - **Research circular dependency issue.** I resolved a circular dependency issue by using @Lazy loading on some spring injected dependencies. I'd like to look further into this as there may be some code refactoring needed.
   - **Local development improvements.** HTTPS requires setting up SSL certificates for local development. I would like to configure the API to run on port 8080 with HTTP when doing local development to reduce the complexity and number of steps needed to get the API running locally.
+  - **More local development imporovements.** Add to MySQL docker container start up script so that the database is initialized with the appropriate tables and test data.
   - **Impove deployment process.** Deploying the API to lightsail container is a bit tedius. I could improve the process by writing a script to package my project, build a tagged docker image, and deploy it to the AWS container registry.
+  - **API documentation.** Implement Swagger to generate automatically updated API definition from code with examples.
+  - **Make** Use make to automate repetitive development tasks"
 
 - Future features:
   - **Web sockets.** I'd like to do something with web sockets so I can learn.

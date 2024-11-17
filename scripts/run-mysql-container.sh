@@ -39,8 +39,9 @@ if [ $(docker ps -q -f name=$CONTAINER_NAME | wc -l) -gt 0 ]; then
 
     # Execute the SQL file to create the blog_entry table
     echo "Creating blog_entry table from blog_entries_schema.sql..."
+    #TODO update path to blog_entries_schema
     docker exec -i $CONTAINER_NAME mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < blog_entries_schema.sql
-
+    #TODO exeute SQL file to create the users/authorities tables
     echo "blog_entry table created successfully."
 else
     echo "Failed to start MySQL container."
