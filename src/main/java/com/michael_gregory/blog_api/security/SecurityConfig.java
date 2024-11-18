@@ -58,10 +58,6 @@ public class SecurityConfig {
         authenticationFilter.setFilterProcessesUrl(SecurityConstants.LOGIN_PATH);
 
         http 
-                .requiresChannel(channel -> channel
-                        .requestMatchers(r -> r.getRequestURI().equals("/actuator/health")).requiresInsecure()
-                        .anyRequest().requiresSecure() // Require HTTPS for all other requests
-                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

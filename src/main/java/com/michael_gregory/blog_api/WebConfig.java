@@ -1,13 +1,8 @@
 package com.michael_gregory.blog_api;
 
-import java.util.Arrays;
-
-import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -24,26 +19,13 @@ public class WebConfig implements WebMvcConfigurer {
 private String[] allowedOrigins;
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("") 
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type", "X-XSRF-TOKEN")
                 .exposedHeaders("Authorization", "Content-Type", "X-XSRF-TOKEN")
-                .allowCredentials(true); //TODO security
+                .allowCredentials(true); 
     }
 
-    @Bean
-    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainer() {
-        return factory -> {
-            // Define the additional connector for HTTP on port 8080
-            factory.addAdditionalTomcatConnectors(createStandardConnector());
-        };
-    }
-
-    private Connector createStandardConnector() {
-        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-        connector.setPort(8080); // Set the additional port for HTTP
-        return connector;
-    }
 }
