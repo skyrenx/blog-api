@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.michael_gregory.blog_api.dto.BlogTitlesResponse;
-import com.michael_gregory.blog_api.entity.BlogEntry;
+import com.michael_gregory.blog_api.entity.blogEntries.BlogEntry;
 
 import jakarta.validation.Valid;
 

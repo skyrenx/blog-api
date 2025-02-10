@@ -1,4 +1,4 @@
-package com.michael_gregory.blog_api.entity;
+package com.michael_gregory.blog_api.entity.users;
 
 import java.io.Serializable;
 

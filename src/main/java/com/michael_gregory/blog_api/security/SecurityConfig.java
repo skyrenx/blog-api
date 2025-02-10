@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
@@ -44,13 +46,14 @@ public class SecurityConfig {
     }
 
     @Bean // TODO why
-    UserDetailsManager UserDetailsManager(DataSource dataSource) {
+    UserDetailsManager UserDetailsManager(@Qualifier("usersDataSource") DataSource dataSource) {
         return new JdbcUserDetailsManager(dataSource);
     }
     
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return  PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        //return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -61,6 +64,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                //This API is stateless with no cookies. No CSRF needed.
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/**").permitAll()
@@ -102,27 +106,9 @@ public class SecurityConfig {
         csrfTokenRepository.setCookieCustomizer((c) -> {
             c.secure(true).sameSite("None");
         }); // TODO don't use sameSite none in production...
-        // Workaround to set SameSite=None attribute, as it's not directly configurable
-        // on the repository
         csrfTokenRepository.setHeaderName("X-XSRF-TOKEN");
 
         return csrfTokenRepository;
-    }
-
-    //CORS config for use in dev
-    //.cors(cors -> cors.configurationSource(devCorsConfigurationSource()))
-    @Bean
-    public CorsConfigurationSource devCorsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*"); // Allow any origin
-        config.addAllowedMethod("*"); // Allow all HTTP methods
-        config.addAllowedHeader("*"); // Allow all headers
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // Apply this CORS configuration to all routes
-
-        return source;
     }
 
 }

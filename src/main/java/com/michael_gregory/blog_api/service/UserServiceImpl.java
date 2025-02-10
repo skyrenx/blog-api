@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.michael_gregory.blog_api.entity.User;
+import com.michael_gregory.blog_api.dao.users.UserRepository;
+import com.michael_gregory.blog_api.entity.users.User;
 import com.michael_gregory.blog_api.exception.EntityNotFoundException;
-import com.michael_gregory.blog_api.dao.UserRepository;
 
 @Service
 public class UserServiceImpl implements UserService {

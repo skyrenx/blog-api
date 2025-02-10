@@ -12,10 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.michael_gregory.blog_api.dao.BlogEntryRepository;
+import com.michael_gregory.blog_api.dao.blogEntries.BlogEntryRepository;
 import com.michael_gregory.blog_api.dto.BlogTitle;
 import com.michael_gregory.blog_api.dto.BlogTitlesResponse;
-import com.michael_gregory.blog_api.entity.BlogEntry;
+import com.michael_gregory.blog_api.entity.blogEntries.BlogEntry;
 
 import jakarta.validation.Valid;
 
@@ -23,8 +23,9 @@ import jakarta.validation.Valid;
 public class BlogEntryServiceImpl implements BlogEntryService{
 
     private BlogEntryRepository blogEntryRepository;
+    private SequenceService sequenceService;
 
-    public BlogEntryServiceImpl(BlogEntryRepository blogEntryRepository) {
+    public BlogEntryServiceImpl(BlogEntryRepository blogEntryRepository, SequenceService sequenceService) {
         this.blogEntryRepository = blogEntryRepository;
     }
 
@@ -50,6 +51,7 @@ public class BlogEntryServiceImpl implements BlogEntryService{
 
     @Override
     public ResponseEntity<BlogEntry> findNewestBlogEntry() {
+        //ResponseEntity<Blo
         return blogEntryRepository.findAll(PageRequest.of(0, 1, 
         Sort.by(Sort.Direction.DESC, "createdAt")))
         .getContent()

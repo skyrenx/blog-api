@@ -1,7 +1,8 @@
-package com.michael_gregory.blog_api.entity;
+package com.michael_gregory.blog_api.entity.users;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,10 +25,10 @@ public class User {
     private String password;
 
     @Column(name = "enabled", nullable = false)
-    private int enabled = 1;
+    private boolean enabled = true;
 
     // One-to-many relationship with authorities
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Authority> authorities;
 
     // Default constructor
@@ -35,7 +36,7 @@ public class User {
     }
 
     // Parameterized constructor
-    public User(String username, String password, int enabled, List<Authority> authorities) {
+    public User(String username, String password, boolean enabled, List<Authority> authorities) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
@@ -59,11 +60,11 @@ public class User {
         this.password = password;
     }
 
-    public int isEnabled() {
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(int enabled) {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 

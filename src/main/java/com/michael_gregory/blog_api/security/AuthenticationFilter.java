@@ -2,9 +2,7 @@ package com.michael_gregory.blog_api.security;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 
@@ -24,7 +22,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.michael_gregory.blog_api.entity.User;
+import com.michael_gregory.blog_api.entity.users.User;
 
 @Component
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
