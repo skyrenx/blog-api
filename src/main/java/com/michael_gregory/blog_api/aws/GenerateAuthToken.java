@@ -5,16 +5,16 @@ import software.amazon.awssdk.services.dsql.DsqlUtilities;
 import software.amazon.awssdk.regions.Region;
 
 public class GenerateAuthToken { 
-    public static String generateToken(String yourClusterEndpoint, Region region) {
+    public static String generateToken(String yourClusterEndpoint, String awsRegion) {
         DsqlUtilities utilities = DsqlUtilities.builder()
-                .region(region)
+                .region(Region.of(awsRegion))
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
 
         // Use `generateDbConnectAuthToken` if you are _not_ logging in as `admin` user 
         String token = utilities.generateDbConnectAdminAuthToken(builder -> {
             builder.hostname(yourClusterEndpoint)
-                    .region(region);
+                    .region(Region.of(awsRegion));
         });
 
         return token;

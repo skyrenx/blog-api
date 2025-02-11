@@ -3,25 +3,24 @@ package com.michael_gregory.blog_api.config;
 import com.michael_gregory.blog_api.aws.GenerateAuthToken;
 import com.zaxxer.hikari.HikariDataSource;
 
-import software.amazon.awssdk.regions.Region;
-
 import java.sql.Connection;
 import java.sql.SQLException;
+
 
 public class RefreshingAuroraDataSource extends HikariDataSource {
 
     private String clusterEndpoint;
-    private Region region;
+    private String region;
 
-    public RefreshingAuroraDataSource(String jdbcUrl, String username, String clusterEndpoint, Region region) {
+    public RefreshingAuroraDataSource(String jdbcUrl, String username, String clusterEndpoint, String region) {
         super();
-        // Configure the pool
         this.setJdbcUrl(jdbcUrl);
         this.setUsername(username);
         this.clusterEndpoint = clusterEndpoint;
         this.region = region;
+
         // Set an initial token
-        this.setPassword(GenerateAuthToken.generateToken(clusterEndpoint, region));
+        this.setPassword(GenerateAuthToken.generateToken(clusterEndpoint, username));
         this.setDriverClassName("org.postgresql.Driver");
         // Set the maxLifetime to less than 15 minutes (e.g., 14 minutes)
         this.setMaxLifetime(14 * 60 * 1000L);

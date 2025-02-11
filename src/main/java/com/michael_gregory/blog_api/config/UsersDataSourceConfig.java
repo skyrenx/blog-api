@@ -1,9 +1,5 @@
 package com.michael_gregory.blog_api.config;
 
-import com.michael_gregory.blog_api.aws.GenerateAuthToken;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
 import jakarta.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,7 +11,6 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
-import software.amazon.awssdk.regions.Region;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,30 +19,23 @@ import javax.sql.DataSource;
 // See note about why I'm using JDBC instead of aws RDS data api: chat-gpt-notes/rds-data-api-chat-gpt-note.md
 @Configuration
 @EnableJpaRepositories(
-    basePackages = "com.michael_gregory.blog_api.dao.users",  // your repository package
+    basePackages = "com.michael_gregory.blog_api.dao.users",
     entityManagerFactoryRef = "usersEntityManagerFactory",
     transactionManagerRef = "usersTransactionManager"
 )
 public class UsersDataSourceConfig {
     @Value("${spring.datasource.users.jdbc-url}")
-    private String jdbcUrlTemplate; // e.g. "jdbc:postgresql://{HOST}:{PORT}/blogdb?sslmode=require"
-
+    String jdbcUrl;
     @Value("${spring.datasource.users.username}")
-    private String username;
-
-    // We'll assume the endpoint and port are defined in the URL template or separately.
-    // For simplicity, we hardcode them here (replace with properties as needed).
-    private final String host = "tuabt2pt3x4bvv6ywa2y2wm6n4.dsql.us-east-1.on.aws"; // Replace with your actual endpoint
-    private final int port = 5432;
-
-    // You can also inject the AWS region from properties if desired
-    @Value("${aws.region:us-east-1}")
-    private String awsRegion;
+    String username;
+    @Value("${spring.datasource.users.host}")
+    String clusterEndpoint;
+    @Value("${aws.region}")
+    String region;
 
     @Bean(name = "usersDataSource")
     public DataSource userDataSource() {
-        String jdbcUrl = jdbcUrlTemplate.replace("{HOST}", host).replace("{PORT}", String.valueOf(port));
-        return new RefreshingAuroraDataSource(jdbcUrl, "admin", host, Region.of(awsRegion));
+        return new RefreshingAuroraDataSource(jdbcUrl, username, clusterEndpoint, region);
     }
 
         @Bean(name = "usersEntityManagerFactory")
