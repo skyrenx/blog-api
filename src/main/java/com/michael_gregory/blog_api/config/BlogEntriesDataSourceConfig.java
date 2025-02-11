@@ -15,6 +15,9 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import software.amazon.awssdk.regions.Region;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 @Configuration
@@ -41,25 +44,8 @@ public class BlogEntriesDataSourceConfig {
 
     @Bean(name = "blogEntriesDataSource")
     public DataSource blogEntriesDataSource() {
-        // Create an instance of the token generator
-        //AuroraAuthTokenGenerator tokenGenerator =
-        //        new AuroraAuthTokenGenerator(host, port, username, Region.of(awsRegion));
-        // Generate the initial token for connection creation
-        //String authToken = tokenGenerator.generateToken();
-        String authToken = GenerateAuthToken.generateToken(host, Region.of(awsRegion));
-        // Replace placeholders in the JDBC URL if necessary
-        String jdbcUrl = jdbcUrlTemplate.replace("{HOST}", host)
-                                        .replace("{PORT}", String.valueOf(port));
-
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername(username);
-        config.setPassword(authToken);
-        // Set the driver class name from properties or hardcode it
-        config.setDriverClassName("org.postgresql.Driver");
-        // Set maximum lifetime to slightly less than token validity (15 minutes token; 14 minutes max lifetime)
-        config.setMaxLifetime(14 * 60 * 1000L);
-        return new HikariDataSource(config);
+        String jdbcUrl = jdbcUrlTemplate.replace("{HOST}", host).replace("{PORT}", String.valueOf(port));
+        return new RefreshingAuroraDataSource(jdbcUrl, "admin", host, Region.of(awsRegion));
     }
 
     @Bean(name = "blogEntriesEntityManagerFactory")
@@ -71,6 +57,11 @@ public class BlogEntriesDataSourceConfig {
         emf.setPackagesToScan("com.michael_gregory.blog_api.entity.blogEntries");
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         emf.setPersistenceUnitName("blogEntriesPU");
+
+        // Set the Hibernate dialect explicitly
+        Map<String, Object> jpaProperties = new HashMap<>();
+        jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        emf.setJpaPropertyMap(jpaProperties);
         return emf;
     }
 
