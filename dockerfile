@@ -24,7 +24,7 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # This is the key step: Copy the JAR file from the 'builder' stage
-COPY --from=builder /app/target/blog-api.jar app.jar
+COPY --from=builder /app/target/*.jar app.jar
 
 # Expose the port your application runs on
 EXPOSE 8080
