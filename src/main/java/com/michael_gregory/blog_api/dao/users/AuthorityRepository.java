@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 import com.michael_gregory.blog_api.entity.users.Authority;
 import com.michael_gregory.blog_api.entity.users.AuthorityId;
