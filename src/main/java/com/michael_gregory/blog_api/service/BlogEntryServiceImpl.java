@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.michael_gregory.blog_api.dao.BlogEntryRepository;
+import com.michael_gregory.blog_api.dao.blogEntries.BlogEntryRepository;
 import com.michael_gregory.blog_api.dto.BlogTitle;
 import com.michael_gregory.blog_api.dto.BlogTitlesResponse;
 import com.michael_gregory.blog_api.entity.BlogEntry;

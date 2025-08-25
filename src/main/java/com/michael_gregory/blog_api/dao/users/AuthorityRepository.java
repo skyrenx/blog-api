@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.michael_gregory.blog_api.entity.users.Authority;
-import com.michael_gregory.blog_api.entity.users.AuthorityId;
+import com.michael_gregory.blog_api.entity.Authority;
+import com.michael_gregory.blog_api.entity.AuthorityId;
 
 public interface AuthorityRepository extends JpaRepository<Authority, AuthorityId> {
      @Query("SELECT a FROM Authority a WHERE a.user.username = :username")

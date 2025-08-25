@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.michael_gregory.blog_api.dao.AuthorityRepository;
+import com.michael_gregory.blog_api.dao.users.AuthorityRepository;
 import com.michael_gregory.blog_api.entity.Authority;
 
 @Service

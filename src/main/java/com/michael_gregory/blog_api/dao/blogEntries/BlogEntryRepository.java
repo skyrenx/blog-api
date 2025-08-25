@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.michael_gregory.blog_api.dto.BlogTitle;
-import com.michael_gregory.blog_api.entity.blogEntries.BlogEntry;
+import com.michael_gregory.blog_api.entity.BlogEntry;
 
 public interface BlogEntryRepository extends JpaRepository<BlogEntry, Long> {
 
@@ -15,5 +15,6 @@ public interface BlogEntryRepository extends JpaRepository<BlogEntry, Long> {
     @Query("SELECT new com.michael_gregory.blog_api.dto.BlogTitle(" +
         "b.id, b.title, b.author, b.createdAt, b.updatedAt) FROM BlogEntry b")
     Page<BlogTitle> findAllTitles(Pageable pageable);
+    
 
 }
