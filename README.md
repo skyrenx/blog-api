@@ -30,9 +30,9 @@ Deployment instructions using lightsail container:
         Go to the ECR Console in AWS.
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 058264453185.dkr.ecr.us-east-1.amazonaws.com
         Create a tag in docker using the repo URI
-            (UPDATE VERSION before tagging) docker tag blog/api-repo:latest 058264453185.dkr.ecr.us-east-1.amazonaws.com/blog/api-repo:1.10
+            (UPDATE VERSION before tagging) docker tag blog/api-repo:latest 058264453185.dkr.ecr.us-east-1.amazonaws.com/blog/api-repo:1.9
         Push tagged docker image to ECR
-            (UPDATE VERSION to the tag  you just created) docker push 058264453185.dkr.ecr.us-east-1.amazonaws.com/blog/api-repo:1.10
+            (UPDATE VERSION to the tag  you just created) docker push 058264453185.dkr.ecr.us-east-1.amazonaws.com/blog/api-repo:1.9
     Deploy that tagged image with production enviornment variables as an amazon lightsail container
 
     more TBD...

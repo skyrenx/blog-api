@@ -8,10 +8,5 @@
     "name": "security.secret-key",
     "type": "java.lang.String",
     "description": "A secure, randomly generated string used to sign and verify JSON Web Tokens (JWTs). This key should be kept confidential and must be strong (e.g., include uppercase, lowercase, numbers, and symbols) to ensure the integrity of the tokens."
-  },
-  {
-    "name": "cors.allowedOrigins",
-    "type": "java.lang.String",
-    "description": "A description for 'cors.allowedOrigins'"
   }
 ]}

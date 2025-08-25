@@ -14,8 +14,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.michael_gregory.blog_api.entity.users.Authority;
-import com.michael_gregory.blog_api.entity.users.User;
+import com.michael_gregory.blog_api.entity.Authority;
+import com.michael_gregory.blog_api.entity.User;
 import com.michael_gregory.blog_api.service.AuthorityService;
 import com.michael_gregory.blog_api.service.UserService;
 
