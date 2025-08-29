@@ -9,6 +9,7 @@ Getting started with local development:
         Don't publish the certificate to a public repo.
 
     Run the application:
+        mvn package
         mvn spring-boot:run
 
     Clean up:

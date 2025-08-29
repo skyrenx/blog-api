@@ -24,7 +24,7 @@ public class User {
     private String password;
 
     @Column(name = "enabled", nullable = false)
-    private int enabled = 1;
+    private boolean enabled = true;
 
     // One-to-many relationship with authorities
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
