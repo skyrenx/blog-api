@@ -35,7 +35,7 @@ public class User {
     }
 
     // Parameterized constructor
-    public User(String username, String password, int enabled, List<Authority> authorities) {
+    public User(String username, String password, boolean enabled, List<Authority> authorities) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
@@ -59,11 +59,11 @@ public class User {
         this.password = password;
     }
 
-    public int isEnabled() {
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(int enabled) {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
