@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "blog_entry")
+@Table(name = "blog_entries")
 public class BlogEntry {
 
     @Id

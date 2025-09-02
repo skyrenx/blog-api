@@ -1,6 +1,7 @@
 package com.michael_gregory.blog_api.security;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,17 +30,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.michael_gregory.blog_api.entity.User;
+import com.michael_gregory.blog_api.service.JwtService;
 
 @Component
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
     private final SecurityConstants securityConstants;
+    private final JwtService jwtService;
 
-    public AuthenticationFilter(AuthenticationManager authenticationManager, SecurityConstants securityConstants) {
+    public AuthenticationFilter(AuthenticationManager authenticationManager, SecurityConstants securityConstants, JwtService jwtService) {
         super(authenticationManager);
         this.authenticationManager = authenticationManager;
         this.securityConstants = securityConstants;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -76,30 +84,38 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain,
-            Authentication authResult) throws IOException, ServletException {
-        List<String> roles = authResult.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toList());
-        String token = JWT.create()
-                .withSubject(authResult.getName())
-                .withClaim("roles", roles) 
-                .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRATION))
-                .sign(Algorithm.HMAC512(securityConstants.getSecretKey()));
+protected void successfulAuthentication(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        FilterChain filterChain,
+                                        Authentication authResult) throws IOException {
+    String username = authResult.getName();
+    List<String> roles = authResult.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
+    
+    ResponseCookie cookie = jwtService.buildHttpOnlyCookie(jwtService.generateToken(username, roles));
 
-        response.addHeader(SecurityConstants.AUTHORIZATION, SecurityConstants.BEARER + token);
-        response.setContentType("application/json");
-        //Do not do filterChain.doFilter here. I tried it and it caused more issues.
-        ObjectMapper mapper = new ObjectMapper();
-        
-        AuthenticationSuccessResponseBody responseBody = new AuthenticationSuccessResponseBody(authResult.getName(), roles);
-     
-        // Convert to JSON string
-        String jsonResponseBody = mapper.writeValueAsString(responseBody);
-        response.getWriter().write(jsonResponseBody); 
-        response.getWriter().flush();
-        
-    }
+    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+    // Prepare JSON response body
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> responseBody = Map.of(
+            "username", authResult.getName(),
+            "roles", roles
+    );
+
+    String jsonResponseBody = mapper.writeValueAsString(responseBody);
+    response.getWriter().write(jsonResponseBody);
+    response.getWriter().flush();
+
+    // Do NOT call filterChain.doFilter here because the response is already committed (sent to the client) 
+    // and we don't want to continue the filter chain.
+
+}
+
 
     class AuthenticationSuccessResponseBody {
         private String user;

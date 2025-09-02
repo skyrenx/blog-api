@@ -9,6 +9,7 @@ Getting started with local development:
         Don't publish the certificate to a public repo.
 
     Run the application:
+        ./run-postgres.sh
         mvn package
         mvn spring-boot:run
 

@@ -8,5 +8,10 @@
     "name": "security.secret-key",
     "type": "java.lang.String",
     "description": "A secure, randomly generated string used to sign and verify JSON Web Tokens (JWTs). This key should be kept confidential and must be strong (e.g., include uppercase, lowercase, numbers, and symbols) to ensure the integrity of the tokens."
+  },
+  {
+    "name": "security.jwt-cookie.secure",
+    "type": "java.lang.Boolean",
+    "description": "Set httpOnly and Secure flags on JWT cookies. In production, this should be true to ensure cookies are only sent over HTTPS and are inaccessible to JavaScript. In development, it can be false if using HTTP."
   }
 ]}

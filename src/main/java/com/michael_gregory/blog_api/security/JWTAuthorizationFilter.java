@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -31,37 +32,58 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        
-        if (request.getRequestURI().equals(SecurityConstants.LOGIN_PATH))
-        {
-            filterChain.doFilter(request, response); // Skip JWT validation for login
-            return;
-        }
-        String header = request.getHeader("Authorization");
-        
-        //skip this filter if there is no jwt (Request is not attempting authorization)
-        if (header == null || !header.startsWith(SecurityConstants.BEARER)) {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+
+        // 🔹 Skip login + public endpoints
+        if (uri.equals(SecurityConstants.LOGIN_PATH) || uri.startsWith("/api/public")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = header.replace(SecurityConstants.BEARER, "");
-        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(securityConstants.getSecretKey()))
-        .build()
-        .verify(token);
-        String user =  decodedJWT.getSubject();
+        String token = null;
 
-        List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
-        Collection<SimpleGrantedAuthority> authorities = Arrays.asList();
-        if(roles != null && !roles.isEmpty()){
-            authorities = roles.stream()
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+        // 🔹 Check cookies for JWT
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("JWT".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                }
+            }
         }
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        filterChain.doFilter(request, response); 
+        if (token != null) {
+            try {
+                // 🔹 Validate token
+                DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(securityConstants.getSecretKey()))
+                        .build()
+                        .verify(token);
+
+                String user = decodedJWT.getSubject();
+                List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
+
+                Collection<SimpleGrantedAuthority> authorities = roles == null
+                        ? List.of()
+                        : roles.stream().map(SimpleGrantedAuthority::new).toList();
+
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(user, null, authorities);
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            } catch (Exception ex) {
+                // The security context holds the authentication information for the current user.
+                // If the token is invalid, we want to make sure that no authentication information
+                // is retained, so we clear the context to prevent any unauthorized access.
+                // Example: If a user tries to access a protected resource with an invalid token,
+                // clearing the security context ensures that they are treated as unauthenticated.
+                SecurityContextHolder.clearContext();
+            }
+        }
+
+        filterChain.doFilter(request, response);
     }
 }
+
