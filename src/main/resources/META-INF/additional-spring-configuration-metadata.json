@@ -13,5 +13,10 @@
     "name": "security.jwt-cookie.secure",
     "type": "java.lang.Boolean",
     "description": "Set httpOnly and Secure flags on JWT cookies. In production, this should be true to ensure cookies are only sent over HTTPS and are inaccessible to JavaScript. In development, it can be false if using HTTP."
+  },
+  {
+    "name": "security.jwt-cookie.sameSite",
+    "type": "java.lang.String",
+    "description": "Set the SameSite attribute for JWT cookies. Use 'Strict' or 'Lax' when the frontend and backend are on the same domain to enhance security. Use 'None' when they are on different domains, but ensure that the Secure flag is also set to true in this case."
   }
 ]}

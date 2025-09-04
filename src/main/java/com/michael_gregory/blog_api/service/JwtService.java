@@ -17,6 +17,8 @@ public class JwtService {
     private final SecurityConstants securityConstants;
     @Value("${security.jwt-cookie.secure}")
     private Boolean secureFlag;
+    @Value("${security.jwt-cookie.sameSite}")
+    private String sameSiteFlag;
 
     public JwtService(SecurityConstants securityConstants) {
         this.securityConstants = securityConstants;
@@ -36,7 +38,7 @@ public class JwtService {
                 .secure(secureFlag) // true in prod with HTTPS
                 .path("/")
                 .maxAge(Duration.ofHours(1)) //TODO confirm 1 hour expiration
-                .sameSite("Strict")
+                .sameSite(sameSiteFlag) //TODO set to "String" when front and backend are on same domain
                 .build();
     }
 }
