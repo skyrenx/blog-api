@@ -25,7 +25,7 @@ private String[] allowedOrigins;
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type", "X-XSRF-TOKEN")
                 .exposedHeaders("Authorization", "Content-Type", "X-XSRF-TOKEN")
-                .allowCredentials(true); 
+                .allowCredentials(true); //TODO disable once frontend is on same domain as service
     }
 
 }

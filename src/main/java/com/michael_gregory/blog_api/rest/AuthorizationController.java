@@ -56,4 +56,19 @@ public class AuthorizationController {
 
         return ResponseEntity.ok(userInfo);
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // Invalidate the JWT cookie
+        ResponseCookie cookie = ResponseCookie.from("JWT", "")
+                .httpOnly(true)
+                .secure(true) // true in prod with HTTPS
+                .path("/")
+                .maxAge(0) // Expire immediately
+                .sameSite("Strict")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
 }
